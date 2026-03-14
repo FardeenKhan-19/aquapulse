@@ -1,0 +1,15 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+ml/trained_models/*.pkl
+*.log
+.git
+.gitignore
+docker-compose*.yml
+Dockerfile
+nginx.conf
+README*.md
+tests/
+.vscode/
+.idea/

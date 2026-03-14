@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50" fill="none">
+  <circle cx="25" cy="25" r="20" fill="#00d4ff" opacity="0.2"/>
+  <circle cx="25" cy="25" r="14" fill="#00d4ff" opacity="0.4"/>
+  <circle cx="25" cy="25" r="8" fill="#00d4ff"/>
+  <path d="M18 30 Q25 18 32 30" stroke="#1a1a2e" stroke-width="2" fill="none"/>
+  <path d="M20 26 Q25 20 30 26" stroke="#1a1a2e" stroke-width="1.5" fill="none"/>
+  <text x="55" y="32" font-family="Inter, sans-serif" font-weight="700" font-size="22" fill="#1a1a2e">
+    AquaPulse
+  </text>
+  <text x="175" y="32" font-family="Inter, sans-serif" font-weight="300" font-size="22" fill="#00d4ff">
+    AI
+  </text>
+</svg>

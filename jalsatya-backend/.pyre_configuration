@@ -1,0 +1,8 @@
+{
+  "source_directories": ["."],
+  "search_path": [
+    "D:\\Jalsatya ai\\jalsatya-backend\\venv\\Lib\\site-packages"
+  ],
+  "python_version": "3.11",
+  "site_package_search_strategy": "all"
+}
