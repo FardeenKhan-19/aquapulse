@@ -467,7 +467,7 @@ export default function HeroPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
               >
-                <span className="text-slate-100">India's Water</span>
+                <span className="text-slate-100">India&apos;s Water</span>
                 <br />
                 <span
                   className="relative"
@@ -684,7 +684,7 @@ export default function HeroPage() {
               }}
               whileTap={{ scale: 0.97 }}
             >
-              <span>Get Started — It's Free</span>
+              <span>Get Started &mdash; It&apos;s Free</span>
               <motion.span
                 animate={{ x: [0, 5, 0] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
