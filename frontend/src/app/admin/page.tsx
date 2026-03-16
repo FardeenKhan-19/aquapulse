@@ -7,6 +7,10 @@ import { MapPin, Bell, AlertTriangle, Activity, Shield, Users, TrendingUp, Trend
 import { toast } from 'sonner';
 import AppLogo from '@/components/ui/AppLogo';
 import Icon from '@/components/ui/AppIcon';
+import { VillageMap } from '@/components/map/VillageMap';
+import type { Village } from '@/lib/types/village';
+import { adminApi, type ApiUsageResponse } from '@/lib/api/admin';
+import { villagesApi } from '@/lib/api/villages';
 
 
 type RiskLevel = 'baseline' | 'low' | 'medium' | 'high' | 'critical';
@@ -183,10 +187,10 @@ function SignalBars({ signal }: { signal: number }) {
 
 // ─── Overview Tab ─────────────────────────────────────────────────────────────
 
-function OverviewTab({ alerts, onAcknowledge }: { alerts: Alert[]; onAcknowledge: (id: string) => void }) {
+function OverviewTab({ alerts, onAcknowledge, villages, apiUsage }: { alerts: Alert[]; onAcknowledge: (id: string) => void; villages: Village[]; apiUsage: ApiUsageResponse | null }) {
     const onlineSensors = MOCK_SENSORS.filter(s => s.status === 'online').length;
     const offlineSensors = MOCK_SENSORS.filter(s => s.status === 'offline').length;
-    const todayTokens = CLAUDE_USAGE_DATA[CLAUDE_USAGE_DATA.length - 1].tokens;
+    const todayTokens = apiUsage?.usage_by_day?.[0]?.total_tokens || 0;
     const unacked = alerts.filter(a => !a.isAcknowledged).length;
 
     const SEVERITY_CONFIG: Record<AlertSeverity, { color: string; bg: string; icon: React.ReactNode }> = {
@@ -216,7 +220,7 @@ function OverviewTab({ alerts, onAcknowledge }: { alerts: Alert[]; onAcknowledge
                 <KpiCard label="Active Sensors" value={`${onlineSensors}/${MOCK_SENSORS.length}`} sub={`${offlineSensors} offline right now`} icon={Radio} color={offlineSensors > 0 ? '#ef9f27' : '#1d9e75'} trend={offlineSensors > 0 ? 'up' : 'flat'} delta={offlineSensors > 0 ? `${offlineSensors} down` : undefined} />
                 <KpiCard label="Health Officers" value={MOCK_USERS.filter(u => u.isActive).length} sub={`${MOCK_USERS.length} total registered`} icon={Users2} color="#7f77dd" trend="flat" />
                 <KpiCard label="Active Alerts" value={unacked} sub="Unacknowledged system-wide" icon={Bell} color={unacked > 2 ? '#e24b4a' : '#ef9f27'} trend="up" delta={`+${unacked} today`} />
-                <KpiCard label="Claude Tokens" value={`${(todayTokens / 1000).toFixed(1)}K`} sub={`~$${(todayTokens * 0.003 / 1000).toFixed(2)} today`} icon={BrainCircuit} color="#7f77dd" trend="up" delta="today" />
+                <KpiCard label="Gemini Tokens" value={`${(todayTokens / 1000).toFixed(1)}K`} sub={`~$${(todayTokens * 0.003 / 1000).toFixed(2)} today`} icon={BrainCircuit} color="#7f77dd" trend="up" delta="today" />
             </div>
 
             {/* Village map placeholder + System health side-by-side */}
@@ -237,45 +241,12 @@ function OverviewTab({ alerts, onAcknowledge }: { alerts: Alert[]; onAcknowledge
                         </div>
                     </div>
                     {/* Mapbox integration point: replace with react-map-gl VillageMap component */}
-                    <div className="relative flex items-center justify-center bg-navy-900" style={{ height: 280 }}>
-                        <div
-                            className="absolute inset-0 opacity-20"
-                            style={{
-                                backgroundImage: `radial-gradient(circle at 35% 45%, rgba(0,212,255,0.3) 0%, transparent 40%),
-                  radial-gradient(circle at 65% 60%, rgba(226,75,74,0.2) 0%, transparent 30%),
-                  radial-gradient(circle at 50% 50%, rgba(127,119,221,0.1) 0%, transparent 60%)`,
-                            }}
+                    <div style={{ height: 280, position: 'relative' }}>
+                        <VillageMap
+                            villages={villages}
+                            height={280}
+                            riskScores={villages.reduce((acc, v) => ({ ...acc, [v.id]: 0 }), {})}
                         />
-                        {/* Simulated village pins */}
-                        {[
-                            { name: 'Dharangaon', x: '38%', y: '42%', risk: 'critical', score: 87 },
-                            { name: 'Pachora', x: '62%', y: '55%', risk: 'medium', score: 62 },
-                            { name: 'Erandol', x: '55%', y: '44%', risk: 'low', score: 28 },
-                            { name: 'Bhadgaon', x: '72%', y: '62%', risk: 'high', score: 71 },
-                            { name: 'Chalisgaon', x: '44%', y: '66%', risk: 'baseline', score: 18 },
-                            { name: 'Jamner', x: '68%', y: '50%', risk: 'medium', score: 45 },
-                        ].map((v) => {
-                            const colors: Record<string, string> = { critical: '#e24b4a', high: '#d85a30', medium: '#ef9f27', low: '#639922', baseline: '#1d9e75' };
-                            const color = colors[v.risk];
-                            return (
-                                <div key={v.name} className="absolute group cursor-pointer" style={{ left: v.x, top: v.y, transform: 'translate(-50%, -50%)' }}>
-                                    <div className="relative">
-                                        <div className="w-4 h-4 rounded-full border-2 border-white/30 transition-transform group-hover:scale-125"
-                                            style={{ backgroundColor: color, boxShadow: `0 0 10px ${color}80` }} />
-                                        {v.risk === 'critical' && (
-                                            <div className="absolute inset-0 rounded-full animate-ping opacity-50" style={{ backgroundColor: color }} />
-                                        )}
-                                    </div>
-                                    <div className="absolute bottom-5 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-navy-700 border border-navy-500 rounded-lg px-2 py-1 whitespace-nowrap z-10 pointer-events-none">
-                                        <p className="text-xs font-semibold text-white">{v.name}</p>
-                                        <p className="text-xs font-mono" style={{ color }}>{v.score}/100</p>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                        <div className="absolute bottom-3 left-3 text-xs text-slate-600 font-mono">
-                            Mapbox GL JS integration point · NEXT_PUBLIC_MAPBOX_TOKEN
-                        </div>
                     </div>
                 </div>
 
@@ -368,12 +339,12 @@ function OverviewTab({ alerts, onAcknowledge }: { alerts: Alert[]; onAcknowledge
                     </div>
                 </div>
 
-                {/* Claude API Usage Chart */}
+                {/* Gemini API Usage Chart */}
                 <div className="rounded-xl bg-navy-800 border border-navy-600 p-4">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
                             <BrainCircuit className="w-4 h-4 text-purple-400" />
-                            <h2 className="text-sm font-semibold text-white">Claude API Usage</h2>
+                            <h2 className="text-sm font-semibold text-white">Gemini API Usage</h2>
                         </div>
                         <div className="text-right">
                             <p className="font-mono text-sm font-bold text-purple-400">{(todayTokens / 1000).toFixed(1)}K</p>
@@ -381,9 +352,9 @@ function OverviewTab({ alerts, onAcknowledge }: { alerts: Alert[]; onAcknowledge
                         </div>
                     </div>
                     <ResponsiveContainer width="100%" height={160}>
-                        <BarChart data={CLAUDE_USAGE_DATA.slice(-14)} margin={{ top: 4, right: 4, bottom: 0, left: -16 }}>
+                        <BarChart data={apiUsage?.usage_by_day?.slice(0, 14).reverse() || []} margin={{ top: 4, right: 4, bottom: 0, left: -16 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                            <XAxis dataKey="date" tick={{ fill: '#475569', fontSize: 9, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} interval={2} />
+                            <XAxis dataKey="date" tick={{ fill: '#475569', fontSize: 9, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} interval={2} tickFormatter={(val) => val ? val.substring(5) : ''} />
                             <YAxis tick={{ fill: '#475569', fontSize: 9, fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
                             <Tooltip
                                 content={({ active, payload, label }) => {
@@ -397,21 +368,21 @@ function OverviewTab({ alerts, onAcknowledge }: { alerts: Alert[]; onAcknowledge
                                     );
                                 }}
                             />
-                            <Bar dataKey="tokens" fill="#7f77dd" radius={[2, 2, 0, 0]} opacity={0.8} />
+                            <Bar dataKey="total_tokens" fill="#7f77dd" radius={[2, 2, 0, 0]} opacity={0.8} />
                         </BarChart>
                     </ResponsiveContainer>
                     <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-navy-600">
                         <div className="text-center">
-                            <p className="font-mono text-sm font-bold text-white">1.24M</p>
-                            <p className="text-xs text-slate-500">Tokens/month</p>
+                            <p className="font-mono text-sm font-bold text-white">{apiUsage?.usage_by_day?.reduce((sum, day) => sum + day.total_tokens, 0).toLocaleString() || 0}</p>
+                            <p className="text-xs text-slate-500">Tokens total</p>
                         </div>
                         <div className="text-center">
-                            <p className="font-mono text-sm font-bold text-white">847</p>
-                            <p className="text-xs text-slate-500">Alerts gen.</p>
+                            <p className="font-mono text-sm font-bold text-white">{apiUsage?.usage_by_day?.reduce((sum, day) => sum + day.documents_generated, 0).toLocaleString() || 0}</p>
+                            <p className="text-xs text-slate-500">Docs gen.</p>
                         </div>
                         <div className="text-center">
-                            <p className="font-mono text-sm font-bold text-white">$3.72</p>
-                            <p className="text-xs text-slate-500">Est. cost/month</p>
+                            <p className="font-mono text-sm font-bold text-white">${((apiUsage?.usage_by_day?.reduce((sum, day) => sum + day.total_tokens, 0) || 0) * 0.003 / 1000).toFixed(2)}</p>
+                            <p className="text-xs text-slate-500">Est. cost</p>
                         </div>
                     </div>
                 </div>
@@ -685,7 +656,7 @@ function SensorsTab() {
         return matchStatus && matchVillage;
     });
 
-    const villages = [...new Set(sensors.map(s => s.village))];
+    const villages = Array.from(new Set(sensors.map(s => s.village)));
 
     const approveSensor = (id: string) => {
         // Backend integration point: PATCH /api/admin/sensors/{id}/approve
@@ -1555,10 +1526,17 @@ export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState('overview');
     const [alerts, setAlerts] = useState<Alert[]>(MOCK_ALERTS);
     const [wsConnected, setWsConnected] = useState(true);
+    const [villages, setVillages] = useState<Village[]>([]);
+    const [apiUsage, setApiUsage] = useState<ApiUsageResponse | null>(null);
 
     useEffect(() => {
         const wsTimer = setTimeout(() => setWsConnected(true), 800);
         return () => clearTimeout(wsTimer);
+    }, []);
+
+    useEffect(() => {
+        villagesApi.listAll({ per_page: 50 }).then(res => setVillages(res.items)).catch(console.error);
+        adminApi.getApiUsage().then(setApiUsage).catch(console.error);
     }, []);
 
     const handleAcknowledge = (alertId: string) => {
@@ -1569,7 +1547,7 @@ export default function AdminDashboard() {
 
     const renderTab = () => {
         switch (activeTab) {
-            case 'overview': return <OverviewTab alerts={alerts} onAcknowledge={handleAcknowledge} />;
+            case 'overview': return <OverviewTab alerts={alerts} onAcknowledge={handleAcknowledge} villages={villages} apiUsage={apiUsage} />;
             case 'users': return <UsersTab />;
             case 'sensors': return <SensorsTab />;
             case 'villages': return <AdminVillagesTab />;

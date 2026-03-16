@@ -19,6 +19,19 @@ export interface ModelInfo {
     classification_counts?: Record<string, number>;
 }
 
+export interface ApiUsageDay {
+    date: string;
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+    documents_generated: number;
+}
+
+export interface ApiUsageResponse {
+    usage_by_day: ApiUsageDay[];
+    model: string;
+}
+
 export const adminApi = {
     getUsers: async (params?: { page?: number; per_page?: number }): Promise<PaginatedResponse<User>> => {
         const response = await apiClient.get<PaginatedResponse<User>>('/admin/users', { params });
@@ -62,6 +75,11 @@ export const adminApi = {
 
     getLogs: async (params?: { level?: string; limit?: number }): Promise<string[]> => {
         const response = await apiClient.get<string[]>('/admin/system/logs', { params });
+        return response.data;
+    },
+
+    getApiUsage: async (): Promise<ApiUsageResponse> => {
+        const response = await apiClient.get<ApiUsageResponse>('/admin/system/api-usage');
         return response.data;
     },
 };

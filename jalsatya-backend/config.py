@@ -28,9 +28,8 @@ class Settings(BaseSettings):
     MOCK_UPDATE_INTERVAL_SECONDS: int = 5
     MOCK_VILLAGE_COUNT: int = 15
 
-    ANTHROPIC_API_KEY: str = "your-anthropic-api-key"
-    CLAUDE_MODEL: str = "claude-sonnet-4-20250514"
-    CLAUDE_MAX_TOKENS: int = 2000
+    GEMINI_API_KEY: str = "your-gemini-api-key"
+    GEMINI_MODEL: str = "gemini-2.5-pro"
 
     AWS_ACCESS_KEY_ID: str = "your-key"
     AWS_SECRET_ACCESS_KEY: str = "your-secret"

@@ -89,7 +89,7 @@ async def api_usage(
         for row in rows
     ]
 
-    return _envelope(data={"usage_by_day": usage, "model": settings.CLAUDE_MODEL})
+    return _envelope(data={"usage_by_day": usage, "model": settings.GEMINI_MODEL})
 
 
 @router.get("/model-info")

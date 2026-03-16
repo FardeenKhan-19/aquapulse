@@ -26,12 +26,15 @@ async def get_dashboard(
     if not village_ids:
         return _envelope(data={"villages": [], "active_alerts": 0, "risk_summary": {}})
 
-    villages_result = await db.execute(select(Village).where(Village.id.in_(village_ids)))
+    import uuid
+    village_uuids = [uuid.UUID(vid) for vid in village_ids if isinstance(vid, str)]
+
+    villages_result = await db.execute(select(Village).where(Village.id.in_(village_uuids)))
     villages = villages_result.scalars().all()
 
     alert_count = await db.execute(
         select(func.count(Alert.id)).where(
-            and_(Alert.village_id.in_(village_ids), Alert.is_acknowledged == False)
+            and_(Alert.village_id.in_(village_uuids), Alert.is_acknowledged == False)
         )
     )
     active_alerts = alert_count.scalar() or 0
@@ -79,7 +82,10 @@ async def get_villages(
     if not village_ids:
         return _envelope(data=[])
 
-    result = await db.execute(select(Village).where(Village.id.in_(village_ids)))
+    import uuid
+    village_uuids = [uuid.UUID(vid) for vid in village_ids if isinstance(vid, str)]
+
+    result = await db.execute(select(Village).where(Village.id.in_(village_uuids)))
     villages = result.scalars().all()
 
     items = []
@@ -108,8 +114,13 @@ async def get_villages(
                 "updated_at": pred.predicted_at.isoformat() + "Z" if pred else None,
             }
         })
-
-    return _envelope(data=items)
+    return _envelope(data={
+        "items": items,
+        "total": len(items),
+        "page": 1,
+        "per_page": 100,
+        "pages": 1
+    })
 
 
 @router.get("/villages/{village_id}/predictions")
@@ -123,10 +134,13 @@ async def get_village_predictions(
     if village_id not in village_ids:
         raise HTTPException(status_code=403, detail="Village not in your assignment")
 
+    import uuid
+    v_uuid = uuid.UUID(village_id)
+
     cutoff = datetime.utcnow() - timedelta(days=days)
     result = await db.execute(
         select(OutbreakPrediction)
-        .where(and_(OutbreakPrediction.village_id == village_id, OutbreakPrediction.predicted_at >= cutoff))
+        .where(and_(OutbreakPrediction.village_id == v_uuid, OutbreakPrediction.predicted_at >= cutoff))
         .order_by(desc(OutbreakPrediction.predicted_at))
         .limit(500)
     )
@@ -159,9 +173,12 @@ async def get_village_readings(
     if village_id not in village_ids:
         raise HTTPException(status_code=403, detail="Village not in your assignment")
 
+    import uuid
+    v_uuid = uuid.UUID(village_id)
+
     result = await db.execute(
         select(SensorReading)
-        .where(SensorReading.village_id == village_id)
+        .where(SensorReading.village_id == v_uuid)
         .order_by(desc(SensorReading.timestamp))
         .limit(limit)
     )
@@ -196,6 +213,9 @@ async def get_village_trends(
     if village_id not in village_ids:
         raise HTTPException(status_code=403, detail="Village not in your assignment")
 
+    import uuid
+    v_uuid = uuid.UUID(village_id)
+
     cutoff = datetime.utcnow() - timedelta(days=days)
 
     result = await db.execute(
@@ -205,7 +225,7 @@ async def get_village_trends(
             func.max(OutbreakPrediction.risk_score).label("max_risk"),
             func.count(OutbreakPrediction.id).label("predictions"),
         )
-        .where(and_(OutbreakPrediction.village_id == village_id, OutbreakPrediction.predicted_at >= cutoff))
+        .where(and_(OutbreakPrediction.village_id == v_uuid, OutbreakPrediction.predicted_at >= cutoff))
         .group_by(func.date_trunc("day", OutbreakPrediction.predicted_at))
         .order_by(func.date_trunc("day", OutbreakPrediction.predicted_at))
     )

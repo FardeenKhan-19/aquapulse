@@ -138,18 +138,18 @@ class ForensicsService:
         rain_4hr = any(h > 80 for h in humidity_prev) if humidity_prev else False
 
         features = {
-            "tds_rise_rate_ppm_per_min": tds_rise_rate,
-            "tds_absolute_delta": tds_delta,
-            "tds_peak_to_baseline_ratio": tds_peak / max(tds_baseline_val, 1),
-            "time_of_spike_hour": spike_hour,
-            "duration_of_elevation_minutes": duration_minutes,
-            "temperature_delta_at_spike": temp_delta,
-            "turbidity_correlated_with_tds": 1.0 if turb_tds_corr else 0.0,
-            "ph_drop_at_spike": ph_drop,
-            "flow_anomaly_at_spike": 1.0 if flow_anomaly else 0.0,
-            "humidity_at_spike": humidity_at_spike,
-            "rain_in_previous_4hr": 1.0 if rain_4hr else 0.0,
-            "spike_pattern_type": spike_pattern,
+            "tds_rise_rate_ppm_per_min": float(tds_rise_rate),
+            "tds_absolute_delta": float(tds_delta),
+            "tds_peak_to_baseline_ratio": float(tds_peak / max(tds_baseline_val, 1)),
+            "time_of_spike_hour": int(spike_hour),
+            "duration_of_elevation_minutes": float(duration_minutes),
+            "temperature_delta_at_spike": float(temp_delta),
+            "turbidity_correlated_with_tds": float(1.0 if turb_tds_corr else 0.0),
+            "ph_drop_at_spike": float(ph_drop),
+            "flow_anomaly_at_spike": float(1.0 if flow_anomaly else 0.0),
+            "humidity_at_spike": float(humidity_at_spike),
+            "rain_in_previous_4hr": float(1.0 if rain_4hr else 0.0),
+            "spike_pattern_type": int(spike_pattern),
         }
 
         result = self.classifier.predict(features)
@@ -181,11 +181,11 @@ class ForensicsService:
             tds_peak=tds_peak,
             tds_rise_rate=tds_rise_rate,
             pattern_signature={
-                "spike_pattern": spike_pattern,
-                "turbidity_correlated": turb_tds_corr,
-                "ph_drop": ph_drop,
-                "flow_anomaly": flow_anomaly,
-                "rain_recent": rain_4hr,
+                "spike_pattern": int(spike_pattern),
+                "turbidity_correlated": bool(turb_tds_corr),
+                "ph_drop": float(ph_drop),
+                "flow_anomaly": bool(flow_anomaly),
+                "rain_recent": bool(rain_4hr),
             },
             supporting_evidence={
                 "features_used": features,

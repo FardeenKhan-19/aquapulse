@@ -22,8 +22,11 @@ async def get_alerts(
     if not village_ids:
         return _envelope(data=[])
 
+    import uuid
+    village_uuids = [uuid.UUID(vid) for vid in village_ids if isinstance(vid, str)]
+
     alert_service = AlertService(db)
-    alerts = await alert_service.get_active_alerts(village_ids=village_ids)
+    alerts = await alert_service.get_active_alerts(village_ids=village_uuids)
 
     items = [
         {
@@ -37,8 +40,13 @@ async def get_alerts(
         }
         for a in alerts
     ]
-
-    return _envelope(data=items)
+    return _envelope(data={
+        "items": items,
+        "total": len(items),
+        "page": 1,
+        "per_page": 100,
+        "pages": 1
+    })
 
 
 @router.post("/alerts/{alert_id}/acknowledge")

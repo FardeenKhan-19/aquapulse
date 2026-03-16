@@ -529,7 +529,7 @@ function OverviewTab({ villages, alerts, onAcknowledge, onViewVillage }: {
                         </span>
                     </div>
                     <button
-                        onClick={() => onViewVillage(criticalVillage.id)}
+                        onClick={() => router.push(`/dashboard/villages/${criticalVillage.id}`)}
                         className="shrink-0 px-3 py-1.5 rounded-lg bg-coral text-white text-xs font-semibold hover:bg-coral/90 transition-colors"
                     >
                         View Now
@@ -632,7 +632,7 @@ function OverviewTab({ villages, alerts, onAcknowledge, onViewVillage }: {
                 <div className="flex items-center gap-2 mb-3">
                     <MessageSquare className="w-4 h-4 text-purple-400" />
                     <h2 className="text-sm font-semibold text-white">Ask AquaPulse AI</h2>
-                    <span className="text-xs px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-400">Claude 3.5</span>
+                    <span className="text-xs px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-400">Gemini</span>
                 </div>
                 <p className="text-xs text-slate-500 mb-3">
                     Ask about water quality trends, contamination sources, disease risk factors, or legal filing status across your assigned villages.
@@ -646,13 +646,17 @@ function OverviewTab({ villages, alerts, onAcknowledge, onViewVillage }: {
                         className="flex-1 bg-navy-900 border border-navy-600 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-600 outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30 transition-all"
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' && chatInput.trim()) {
-                                toast.success('Opening AI Assistant...', { duration: 2000 });
+                                router.push('/dashboard/chatbot?q=' + encodeURIComponent(chatInput.trim()));
                             }
                         }}
                     />
                     <button
                         onClick={() => {
-                            if (chatInput.trim()) toast.success('Opening AI Assistant...', { duration: 2000 });
+                            if (chatInput.trim()) {
+                                router.push('/dashboard/chatbot?q=' + encodeURIComponent(chatInput.trim()));
+                            } else {
+                                router.push('/dashboard/chatbot');
+                            }
                         }}
                         className="px-3 py-2 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-400 hover:bg-purple-500/30 transition-colors"
                     >
@@ -1052,10 +1056,10 @@ export default function HealthOfficerDashboard() {
         toast.success('Alert acknowledged', { duration: 3000 });
     };
 
+    const router = useRouter();
+
     const handleViewVillage = (id: string) => {
-        setSelectedVillageId(id);
-        setActiveTab('villages');
-        toast.info(`Loading ${villages.find(v => v.id === id)?.name} details...`, { duration: 2000 });
+        router.push(`/dashboard/villages/${id}`);
     };
 
     const unackedAlerts = alerts.filter(a => !a.isAcknowledged).length;
@@ -1078,11 +1082,11 @@ export default function HealthOfficerDashboard() {
                 return <LegalTab />;
             case 'chatbot':
                 return (
-                    <div className="rounded-xl bg-navy-800 border border-purple-500/20 p-8 text-center">
+                    <div className="rounded-xl bg-navy-800 border border-purple-500/20 p-8 text-center mt-10" onClick={() => (window.location.href = '/dashboard/chatbot')} style={{ cursor: 'pointer' }}>
                         <MessageSquare className="w-12 h-12 text-purple-400 mx-auto mb-4 opacity-60" />
-                        <h3 className="text-lg font-semibold text-white mb-2">AI Assistant</h3>
+                        <h3 className="text-lg font-semibold text-white mb-2">AI Assistant Placeholder</h3>
                         <p className="text-sm text-slate-400 max-w-md mx-auto">
-                            Full AI chatbot interface with Claude 3.5. Ask about contamination sources, disease risk factors, legal filing status, or historical water quality trends.
+                            Full AI chatbot interface with Gemini. Ask about contamination sources, disease risk factors, legal filing status, or historical water quality trends.
                         </p>
                     </div>
                 );

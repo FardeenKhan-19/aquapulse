@@ -10,7 +10,7 @@ from services.notification_service import NotificationService
 from services.s3_service import S3Service
 from config import settings
 from loguru import logger
-import anthropic
+import google.generativeai as genai
 import uuid
 
 SOURCE_NAMES = {
@@ -27,13 +27,11 @@ SOURCE_NAMES = {
 class LegalService:
     def __init__(self, db: AsyncSession):
         self.db = db
-        self._client: Optional[anthropic.Anthropic] = None
+        genai.configure(api_key=settings.GEMINI_API_KEY)
 
     @property
-    def claude_client(self) -> anthropic.Anthropic:
-        if self._client is None:
-            self._client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
-        return self._client
+    def gemini_model(self):
+        return genai.GenerativeModel(model_name=settings.GEMINI_MODEL)
 
     async def generate_legal_documents(
         self,
@@ -154,7 +152,7 @@ FORMAT REQUIREMENTS:
 
 Generate the complete document. Do not include any meta-commentary."""
 
-        content, prompt_tokens, completion_tokens = await self._call_claude(prompt)
+        content, prompt_tokens, completion_tokens = await self._call_gemini(prompt)
 
         return LegalDocument(
             id=uuid.uuid4(),
@@ -165,7 +163,7 @@ Generate the complete document. Do not include any meta-commentary."""
             document_content=content,
             filing_status=FilingStatus.generated,
             recipient=f"CMO, {context['district']} & PHC, {context['village_name']}",
-            claude_model_used=settings.CLAUDE_MODEL,
+            claude_model_used=settings.GEMINI_MODEL,  # legacy column name
             prompt_tokens_used=prompt_tokens,
             completion_tokens_used=completion_tokens,
         )
@@ -211,7 +209,7 @@ FORMAT REQUIREMENTS:
 
 Generate the complete legal affidavit. No meta-commentary."""
 
-        content, prompt_tokens, completion_tokens = await self._call_claude(prompt)
+        content, prompt_tokens, completion_tokens = await self._call_gemini(prompt)
         ref_number = f"JS/CPCB/{datetime.utcnow().strftime('%Y%m%d')}/{str(uuid.uuid4())[:8].upper()}"
 
         return LegalDocument(
@@ -224,7 +222,7 @@ Generate the complete legal affidavit. No meta-commentary."""
             filing_status=FilingStatus.generated,
             filing_reference=ref_number,
             recipient=f"CPCB / {context['state']} PCB",
-            claude_model_used=settings.CLAUDE_MODEL,
+            claude_model_used=settings.GEMINI_MODEL,
             prompt_tokens_used=prompt_tokens,
             completion_tokens_used=completion_tokens,
         )
@@ -265,7 +263,7 @@ Also generate the equivalent JSON structure for API submission.
 
 Generate the complete complaint. No meta-commentary."""
 
-        content, prompt_tokens, completion_tokens = await self._call_claude(prompt)
+        content, prompt_tokens, completion_tokens = await self._call_gemini(prompt)
         ref_number = f"CPCB/GRV/{datetime.utcnow().strftime('%Y%m%d')}/{str(uuid.uuid4())[:8].upper()}"
 
         return LegalDocument(
@@ -278,24 +276,25 @@ Generate the complete complaint. No meta-commentary."""
             filing_status=FilingStatus.generated,
             filing_reference=ref_number,
             recipient="CPCB Grievance Portal",
-            claude_model_used=settings.CLAUDE_MODEL,
+            claude_model_used=settings.GEMINI_MODEL,
             prompt_tokens_used=prompt_tokens,
             completion_tokens_used=completion_tokens,
         )
 
-    async def _call_claude(self, prompt: str):
+    async def _call_gemini(self, prompt: str):
         try:
-            response = self.claude_client.messages.create(
-                model=settings.CLAUDE_MODEL,
-                max_tokens=settings.CLAUDE_MAX_TOKENS,
-                messages=[{"role": "user", "content": prompt}],
-            )
-            content = response.content[0].text
-            prompt_tokens = response.usage.input_tokens
-            completion_tokens = response.usage.output_tokens
+            response = self.gemini_model.generate_content(prompt)
+            content = response.text
+            
+            prompt_tokens = 0
+            completion_tokens = 0
+            if hasattr(response, 'usage_metadata'):
+                prompt_tokens = response.usage_metadata.prompt_token_count
+                completion_tokens = response.usage_metadata.candidates_token_count
+
             return content, prompt_tokens, completion_tokens
         except Exception as e:
-            logger.error(f"Claude API call failed: {e}")
+            logger.error(f"Gemini API call failed: {e}")
             fallback = f"[Document generation failed. Error: {str(e)}. Manual generation required.]"
             return fallback, 0, 0
 

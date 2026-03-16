@@ -11,7 +11,7 @@ from models.village import Village
 from models.user import User
 from config import settings
 from loguru import logger
-import anthropic
+import google.generativeai as genai
 import uuid
 
 
@@ -23,13 +23,14 @@ You have the following context about the user and their villages. Use this to an
 class ChatbotService:
     def __init__(self, db: AsyncSession):
         self.db = db
-        self._client: Optional[anthropic.Anthropic] = None
+        genai.configure(api_key=settings.GEMINI_API_KEY)
 
     @property
-    def claude_client(self) -> anthropic.Anthropic:
-        if self._client is None:
-            self._client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
-        return self._client
+    def gemini_model(self):
+        return genai.GenerativeModel(
+            model_name=settings.GEMINI_MODEL,
+            system_instruction=SYSTEM_PROMPT
+        )
 
     async def chat(
         self,
@@ -80,27 +81,28 @@ class ChatbotService:
         )
         prev_messages = list(reversed(prev_result.scalars().all()))
 
-        messages = []
+        # For Gemini, system prompt is handled via the model init. We just pass context as the first user message or prepended.
+        context_prompt = f"Background Context for User:\n{context}\n\nUser Question: {message}"
+
+        # Gemini history Format
+        gemini_history = []
         for msg in prev_messages:
-            role = "user" if msg.role == MessageRole.user or msg.role == "user" else "assistant"
-            messages.append({"role": role, "content": msg.content})
-
-        if not any(m["content"] == message for m in messages):
-            messages.append({"role": "user", "content": message})
-
-        system_content = SYSTEM_PROMPT + "\n\n" + context
+            # Gemini roles: 'user' or 'model'
+            role = "user" if msg.role == MessageRole.user or msg.role == "user" else "model"
+            gemini_history.append({"role": role, "parts": [msg.content]})
 
         try:
-            response = self.claude_client.messages.create(
-                model=settings.CLAUDE_MODEL,
-                max_tokens=settings.CLAUDE_MAX_TOKENS,
-                system=system_content,
-                messages=messages,
-            )
-            assistant_content = response.content[0].text
-            tokens_used = response.usage.input_tokens + response.usage.output_tokens
+            chat_session = self.gemini_model.start_chat(history=gemini_history)
+            response = chat_session.send_message(context_prompt)
+            assistant_content = response.text
+            
+            # Rough token estimate if usage metadata is available, default to 0
+            tokens_used = 0 
+            if hasattr(response, 'usage_metadata'):
+                tokens_used = response.usage_metadata.total_token_count
+                
         except Exception as e:
-            logger.error(f"Chatbot Claude call failed: {e}")
+            logger.error(f"Chatbot Gemini call failed: {e}")
             assistant_content = (
                 "I'm sorry, I'm having trouble connecting to my AI service right now. "
                 "Please try again in a moment. If the issue persists, contact your administrator."
@@ -134,8 +136,9 @@ class ChatbotService:
         parts = [f"User: {user.full_name} (Role: {user.role.value if hasattr(user.role, 'value') else user.role})"]
 
         if village_ids:
+            village_uuids = [uuid.UUID(vid) for vid in village_ids if isinstance(vid, str)]
             villages_result = await self.db.execute(
-                select(Village).where(Village.id.in_(village_ids))
+                select(Village).where(Village.id.in_(village_uuids))
             )
             villages = villages_result.scalars().all()
             parts.append(f"Assigned Villages: {', '.join(v.name for v in villages)}")
@@ -165,7 +168,7 @@ class ChatbotService:
                 select(Alert)
                 .where(
                     and_(
-                        Alert.village_id.in_(village_ids),
+                        Alert.village_id.in_(village_uuids),
                         Alert.is_acknowledged == False,
                     )
                 )
@@ -182,7 +185,7 @@ class ChatbotService:
                 select(ForensicsReport)
                 .where(
                     and_(
-                        ForensicsReport.village_id.in_(village_ids),
+                        ForensicsReport.village_id.in_(village_uuids),
                         ForensicsReport.generated_at >= datetime.utcnow() - timedelta(days=7),
                     )
                 )
@@ -202,7 +205,7 @@ class ChatbotService:
                 select(LegalDocument)
                 .where(
                     and_(
-                        LegalDocument.village_id.in_(village_ids),
+                        LegalDocument.village_id.in_(village_uuids),
                         LegalDocument.generated_at >= datetime.utcnow() - timedelta(days=7),
                     )
                 )
@@ -227,9 +230,10 @@ class ChatbotService:
         ]
 
         if village_ids:
+            village_uuids = [uuid.UUID(vid) for vid in village_ids if isinstance(vid, str)]
             alert_count = await self.db.execute(
                 select(func.count(Alert.id)).where(
-                    and_(Alert.village_id.in_(village_ids), Alert.is_acknowledged == False)
+                    and_(Alert.village_id.in_(village_uuids), Alert.is_acknowledged == False)
                 )
             )
             active = alert_count.scalar() or 0
@@ -243,7 +247,7 @@ class ChatbotService:
             forensics_count = await self.db.execute(
                 select(func.count(ForensicsReport.id)).where(
                     and_(
-                        ForensicsReport.village_id.in_(village_ids),
+                        ForensicsReport.village_id.in_(village_uuids),
                         ForensicsReport.generated_at >= datetime.utcnow() - timedelta(days=3),
                     )
                 )
@@ -310,4 +314,39 @@ class ChatbotService:
                 }
                 for m in messages
             ],
+        }
+
+    async def get_user_sessions(self, user: User) -> List[Dict[str, Any]]:
+        result = await self.db.execute(
+            select(ChatbotSession)
+            .where(ChatbotSession.user_id == user.id)
+            .order_by(desc(ChatbotSession.session_start))
+        )
+        sessions = result.scalars().all()
+        return [
+            {
+                "id": str(s.id),
+                "title": f"Chat {s.session_start.strftime('%b %d, %H:%M')}",
+                "created_at": s.session_start.isoformat() + "Z",
+                "updated_at": (s.session_end or s.session_start).isoformat() + "Z",
+                "messages_count": s.message_count,
+            }
+            for s in sessions
+        ]
+
+    async def create_session(self, user: User) -> Dict[str, Any]:
+        session = ChatbotSession(
+            id=uuid.uuid4(),
+            user_id=user.id,
+            session_start=datetime.utcnow(),
+            message_count=0,
+        )
+        self.db.add(session)
+        await self.db.commit()
+        return {
+            "id": str(session.id),
+            "title": f"Chat {session.session_start.strftime('%b %d, %H:%M')}",
+            "created_at": session.session_start.isoformat() + "Z",
+            "updated_at": session.session_start.isoformat() + "Z",
+            "messages_count": 0,
         }
