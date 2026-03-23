@@ -49,7 +49,7 @@ async def get_alerts(
     })
 
 
-@router.post("/alerts/{alert_id}/acknowledge")
+@router.put("/alerts/{alert_id}/acknowledge")
 async def acknowledge_alert(
     alert_id: str,
     db: AsyncSession = Depends(get_db),

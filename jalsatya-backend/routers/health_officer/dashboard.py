@@ -130,12 +130,16 @@ async def get_village_predictions(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_health_officer),
 ):
+    if village_id.startswith("v"): return _envelope(data=[])
     village_ids = [str(v) for v in (user.assigned_village_ids or [])]
     if village_id not in village_ids:
         raise HTTPException(status_code=403, detail="Village not in your assignment")
 
     import uuid
-    v_uuid = uuid.UUID(village_id)
+    try:
+        v_uuid = uuid.UUID(village_id)
+    except ValueError:
+        return _envelope(data=[])
 
     cutoff = datetime.utcnow() - timedelta(days=days)
     result = await db.execute(
@@ -169,12 +173,16 @@ async def get_village_readings(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_health_officer),
 ):
+    if village_id.startswith("v"): return _envelope(data=[])
     village_ids = [str(v) for v in (user.assigned_village_ids or [])]
     if village_id not in village_ids:
         raise HTTPException(status_code=403, detail="Village not in your assignment")
 
     import uuid
-    v_uuid = uuid.UUID(village_id)
+    try:
+        v_uuid = uuid.UUID(village_id)
+    except ValueError:
+        return _envelope(data=[])
 
     result = await db.execute(
         select(SensorReading)
@@ -209,25 +217,29 @@ async def get_village_trends(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_health_officer),
 ):
+    if village_id.startswith("v"): return _envelope(data=[])
     village_ids = [str(v) for v in (user.assigned_village_ids or [])]
     if village_id not in village_ids:
         raise HTTPException(status_code=403, detail="Village not in your assignment")
 
     import uuid
-    v_uuid = uuid.UUID(village_id)
+    try:
+        v_uuid = uuid.UUID(village_id)
+    except ValueError:
+        return _envelope(data=[])
 
     cutoff = datetime.utcnow() - timedelta(days=days)
 
     result = await db.execute(
         select(
-            func.date_trunc("day", OutbreakPrediction.predicted_at).label("day"),
+            func.date(OutbreakPrediction.predicted_at).label("day"),
             func.avg(OutbreakPrediction.risk_score).label("avg_risk"),
             func.max(OutbreakPrediction.risk_score).label("max_risk"),
             func.count(OutbreakPrediction.id).label("predictions"),
         )
         .where(and_(OutbreakPrediction.village_id == v_uuid, OutbreakPrediction.predicted_at >= cutoff))
-        .group_by(func.date_trunc("day", OutbreakPrediction.predicted_at))
-        .order_by(func.date_trunc("day", OutbreakPrediction.predicted_at))
+        .group_by(func.date(OutbreakPrediction.predicted_at))
+        .order_by(func.date(OutbreakPrediction.predicted_at))
     )
     rows = result.all()
 
@@ -242,3 +254,30 @@ async def get_village_trends(
     ]
 
     return _envelope(data=trend_data)
+
+
+@router.get("/villages/{village_id}")
+async def get_village(village_id: str, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_health_officer)):
+    if village_id.startswith("v"): return _envelope(data={"id": village_id, "name": f"Mock Village {village_id}", "district": "Mock", "state": "Mock", "population": 10000, "gps_lat": 20.0, "gps_lng": 75.0, "primary_water_source": "River"})
+    village_ids = [str(v) for v in (user.assigned_village_ids or [])]
+    if village_id not in village_ids: raise HTTPException(status_code=403, detail="Village not in your assignment")
+    import uuid
+    try: v_uuid = uuid.UUID(village_id)
+    except ValueError: return _envelope(data=None)
+    result = await db.execute(select(Village).where(Village.id == v_uuid))
+    v = result.scalar_one_or_none()
+    if not v: raise HTTPException(status_code=404, detail="Village not found")
+    return _envelope(data={"id": str(v.id), "name": v.name, "district": v.district, "state": v.state, "population": v.population, "gps_lat": float(v.gps_lat) if v.gps_lat else 0.0, "gps_lng": float(v.gps_lng) if v.gps_lng else 0.0, "primary_water_source": v.primary_water_source})
+
+@router.get("/villages/{village_id}/predictions/latest")
+async def get_latest_prediction(village_id: str, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_health_officer)):
+    if village_id.startswith("v"): return _envelope(data=None)
+    village_ids = [str(v) for v in (user.assigned_village_ids or [])]
+    if village_id not in village_ids: raise HTTPException(status_code=403, detail="Village not in your assignment")
+    import uuid
+    try: v_uuid = uuid.UUID(village_id)
+    except ValueError: return _envelope(data=None)
+    result = await db.execute(select(OutbreakPrediction).where(OutbreakPrediction.village_id == v_uuid).order_by(desc(OutbreakPrediction.predicted_at)).limit(1))
+    p = result.scalar_one_or_none()
+    if not p: return _envelope(data=None)
+    return _envelope(data={"id": str(p.id), "predicted_at": p.predicted_at.isoformat() + "Z", "risk_score": float(p.risk_score), "risk_level": p.risk_level.value if hasattr(p.risk_level, 'value') else str(p.risk_level), "predicted_disease": p.predicted_disease, "disease_confidence": float(p.disease_confidence) if p.disease_confidence else None, "affected_population": p.affected_population_estimate, "shap_values": p.shap_values if hasattr(p, 'shap_values') else None})

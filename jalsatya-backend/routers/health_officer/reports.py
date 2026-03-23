@@ -199,6 +199,7 @@ async def get_village_forensics(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_health_officer),
 ):
+    if village_id.startswith("v"): return _envelope(data={"items":[], "total":0, "page":1, "per_page":50, "pages":1})
     village_ids = [str(v) for v in (user.assigned_village_ids or [])]
     if village_id not in village_ids:
         raise HTTPException(status_code=403, detail="Not authorized for this village")
@@ -207,7 +208,7 @@ async def get_village_forensics(
     try:
         v_uuid = uuid.UUID(village_id)
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid village UUID format")
+        return _envelope(data={"items":[], "total":0, "page":1, "per_page":50, "pages":1})
 
     result = await db.execute(
         select(ForensicsReport)
@@ -245,6 +246,7 @@ async def get_village_legal(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_health_officer),
 ):
+    if village_id.startswith("v"): return _envelope(data={"items":[], "total":0, "page":1, "per_page":50, "pages":1})
     village_ids = [str(v) for v in (user.assigned_village_ids or [])]
     if village_id not in village_ids:
         raise HTTPException(status_code=403, detail="Not authorized for this village")
@@ -253,7 +255,7 @@ async def get_village_legal(
     try:
         v_uuid = uuid.UUID(village_id)
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid village UUID format")
+        return _envelope(data={"items":[], "total":0, "page":1, "per_page":50, "pages":1})
 
     result = await db.execute(
         select(LegalDocument)

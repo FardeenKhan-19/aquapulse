@@ -67,14 +67,14 @@ async def api_usage(
     cutoff = datetime.utcnow() - timedelta(days=30)
     result = await db.execute(
         select(
-            func.date_trunc("day", LegalDocument.generated_at).label("day"),
+            func.date(LegalDocument.generated_at).label("day"),
             func.sum(LegalDocument.prompt_tokens_used).label("prompt_tokens"),
             func.sum(LegalDocument.completion_tokens_used).label("completion_tokens"),
             func.count(LegalDocument.id).label("documents"),
         )
         .where(LegalDocument.generated_at >= cutoff)
-        .group_by(func.date_trunc("day", LegalDocument.generated_at))
-        .order_by(func.date_trunc("day", LegalDocument.generated_at).desc())
+        .group_by(func.date(LegalDocument.generated_at))
+        .order_by(func.date(LegalDocument.generated_at).desc())
     )
     rows = result.all()
 
