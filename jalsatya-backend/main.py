@@ -150,9 +150,10 @@ async def lifespan(app: FastAPI):
         logger.error(f"Database seeding failed: {e}")
 
     try:
-        await train_models_if_needed()
+        asyncio.create_task(train_models_if_needed())
+        logger.info("Model training scheduled in background.")
     except Exception as e:
-        logger.error(f"Model training failed: {e}")
+        logger.error(f"Model training scheduling failed: {e}")
 
     logger.info(f"{settings.APP_NAME} is ready!")
 
