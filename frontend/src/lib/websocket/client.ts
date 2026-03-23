@@ -1,7 +1,7 @@
 import { useWsStore } from '@/lib/stores/wsStore';
 import type { WsMessage } from '@/lib/types/websocket';
 
-const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
+const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_URL || 'wss://aquapulse-backend-6haa.onrender.com';
 const MAX_RECONNECT_DELAY = 30000;
 const INITIAL_RECONNECT_DELAY = 1000;
 
