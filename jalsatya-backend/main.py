@@ -70,8 +70,21 @@ async def seed_database():
             updated_at=datetime.utcnow(),
         )
         db.add(admin)
+
+        ho_user = User(
+            id=uuid.uuid4(),
+            email="priya.sharma@aquapulse.gov.in",
+            hashed_password=get_password_hash("AquaPulse@2025"),
+            full_name="Dr. Priya Sharma",
+            role=UserRole.health_officer,
+            is_active=True,
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+        )
+        db.add(ho_user)
+        
         await db.flush()
-        logger.info(f"Admin user created: {settings.ADMIN_EMAIL}")
+        logger.info(f"Admin and Health Officer users created")
 
         villages = await seed_villages(db)
 
