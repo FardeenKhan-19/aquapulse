@@ -71,6 +71,11 @@ async def seed_database():
         )
         db.add(admin)
 
+        villages = await seed_villages(db)
+
+        demo_village_names = ["Dharangaon", "Yawal", "Raver"]
+        demo_villages = [v for v in villages if v.name in demo_village_names]
+
         ho_user = User(
             id=uuid.uuid4(),
             email="priya.sharma@aquapulse.gov.in",
@@ -78,6 +83,7 @@ async def seed_database():
             full_name="Dr. Priya Sharma",
             role=UserRole.health_officer,
             is_active=True,
+            assigned_village_ids=[str(v.id) for v in demo_villages],
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
         )
@@ -85,17 +91,8 @@ async def seed_database():
         
         await db.flush()
         logger.info(f"Admin and Health Officer users created")
-
-        villages = await seed_villages(db)
-
-        # Bind Health Officer to the newly created demo villages so they can see data
-        ho_user.assigned_village_ids = [str(v.id) for v in villages]
-        db.add(ho_user)
-        await db.flush()
-
+        
         sensors = []
-        demo_village_names = ["Dharangaon", "Yawal", "Raver"]
-        demo_villages = [v for v in villages if v.name in demo_village_names]
 
         for idx, village in enumerate(demo_villages):
             if idx == 0:
@@ -201,8 +198,8 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["Authorization", "Content-Type", "X-Sensor-Key"],
 )
-app.add_middleware(RequestLoggingMiddleware)
-app.add_middleware(SecurityHeadersMiddleware)
+# app.add_middleware(RequestLoggingMiddleware)
+# app.add_middleware(SecurityHeadersMiddleware)
 
 app.include_router(auth_router)
 app.include_router(admin_users_router)
