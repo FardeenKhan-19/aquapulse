@@ -27,9 +27,8 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   async rewrites() {
-    // Force override to Render backend if env variable contains localhost (like from old Vercel settings)
-    const envUrl = process.env.NEXT_PUBLIC_API_URL || '';
-    const backendUrl = envUrl.includes('localhost') || !envUrl ? 'https://aquapulse-backend-6haa.onrender.com' : envUrl;
+    // Strictly override to the live backend to avoid Vercel infinite proxy loops 
+    const backendUrl = 'https://aquapulse-backend-6haa.onrender.com';
     return [
       {
         source: '/api/:path*',
