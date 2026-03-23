@@ -80,7 +80,10 @@ async def seed_database():
         demo_villages = [v for v in villages if v.name in demo_village_names]
 
         for idx, village in enumerate(demo_villages):
-            api_key = generate_api_key()
+            if idx == 0:
+                api_key = "018a11d4-ad52-455e-924e-86d46ad11b5e"
+            else:
+                api_key = generate_api_key()
             sensor = SensorNode(
                 id=uuid.uuid4(),
                 hardware_id=f"JS-SENSOR-{idx+1:03d}",
