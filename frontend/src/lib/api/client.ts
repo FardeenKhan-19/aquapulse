@@ -13,7 +13,7 @@ const apiClient = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    timeout: 30000,
+    timeout: 60000, // 60s to allow Render free tier to wake up
 });
 
 let accessToken: string | null = null;
