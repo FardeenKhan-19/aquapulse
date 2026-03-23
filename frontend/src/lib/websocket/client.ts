@@ -15,14 +15,21 @@ class WebSocketClient {
     private token: string | null = null;
     private isIntentionallyClosed = false;
 
-    connect(token: string) {
+    public connect(token: string) {
+        if (!token) return;
         this.token = token;
         this.isIntentionallyClosed = false;
-        this.doConnect();
-    }
 
-    private doConnect() {
-        if (!this.token) return;
+        if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
+            return;
+        }
+
+        let WS_BASE_URL = process.env.NEXT_PUBLIC_WS_URL || 'wss://aquapulse-backend-6haa.onrender.com';
+
+        // Failsafe: If Vercel env variables mistakenly baked localhost into production, force the live backend.
+        if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && WS_BASE_URL.includes('localhost')) {
+            WS_BASE_URL = 'wss://aquapulse-backend-6haa.onrender.com';
+        }
 
         try {
             this.ws = new WebSocket(`${WS_BASE_URL}/ws/live?token=${this.token}`);
