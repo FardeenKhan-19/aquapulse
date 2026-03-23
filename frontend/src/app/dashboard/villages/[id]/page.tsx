@@ -32,7 +32,8 @@ export default function VillageDetailPage() {
     const { data: predictions } = usePredictions(id, { per_page: 30 });
     const { data: forensics } = useForensicsByVillage(id);
     const { data: legal } = useLegalByVillage(id);
-    const latestReading = useWsStore((s) => s.latestReadings[id]);
+    const wsLatestReading = useWsStore((s) => s.latestReadings[id]);
+    const latestReading = wsLatestReading || (readings && readings.length > 0 ? readings[0] : null);
 
     if (isLoading || !village) {
         return <div className="space-y-4">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-32 bg-surface animate-pulse rounded-xl" />)}</div>;
