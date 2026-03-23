@@ -28,7 +28,7 @@ async def submit_reading(
 
     reading = await sensor_service.ingest_reading(
         sensor_node=sensor,
-        reading_data=reading_data.model_dump(mode="json"),
+        reading_data=reading_data.model_dump(),
     )
 
     return _envelope(data={

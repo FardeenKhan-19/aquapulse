@@ -23,6 +23,14 @@ class SensorService:
         sensor_node: SensorNode,
         reading_data: Dict[str, Any],
     ) -> SensorReading:
+        
+        raw_json_dict = {}
+        for k, v in reading_data.items():
+            if isinstance(v, datetime):
+                raw_json_dict[k] = v.isoformat() + "Z"
+            else:
+                raw_json_dict[k] = v
+                
         reading = SensorReading(
             id=uuid.uuid4(),
             sensor_node_id=sensor_node.id,
@@ -34,7 +42,7 @@ class SensorService:
             ph=reading_data.get("ph"),
             humidity_pct=reading_data.get("humidity_pct"),
             flow_rate_lpm=reading_data.get("flow_rate_lpm"),
-            raw_payload=reading_data,
+            raw_payload=raw_json_dict,
             is_anomaly=False,
             anomaly_score=0.0,
         )
