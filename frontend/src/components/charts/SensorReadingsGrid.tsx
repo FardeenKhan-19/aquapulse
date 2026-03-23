@@ -14,14 +14,14 @@ export function SensorReadingsGrid({ readings }: SensorReadingsGridProps) {
             <table className="w-full text-xs">
                 <thead>
                     <tr className="border-b border-accent/30">
-                        <th className="text-left py-2 px-3 text-text-muted font-medium sticky left-0 bg-surface">Time</th>
-                        <th className="text-right py-2 px-3 text-text-muted font-medium">TDS (ppm)</th>
-                        <th className="text-right py-2 px-3 text-text-muted font-medium">Temp (°C)</th>
-                        <th className="text-right py-2 px-3 text-text-muted font-medium">Turbidity</th>
-                        <th className="text-right py-2 px-3 text-text-muted font-medium">pH</th>
-                        <th className="text-right py-2 px-3 text-text-muted font-medium">Humidity</th>
-                        <th className="text-right py-2 px-3 text-text-muted font-medium">Flow</th>
-                        <th className="text-center py-2 px-3 text-text-muted font-medium">Anomaly</th>
+                        <th className="text-left py-1.5 px-2 text-[10px] sm:text-xs text-text-muted font-medium sticky left-0 bg-surface">Time</th>
+                        <th className="text-right py-1.5 px-2 text-[10px] sm:text-xs text-text-muted font-medium">TDS (ppm)</th>
+                        <th className="text-right py-1.5 px-2 text-[10px] sm:text-xs text-text-muted font-medium">Temp (°C)</th>
+                        <th className="text-right py-1.5 px-2 text-[10px] sm:text-xs text-text-muted font-medium">Turbidity</th>
+                        <th className="text-right py-1.5 px-2 text-[10px] sm:text-xs text-text-muted font-medium">pH</th>
+                        <th className="text-right py-1.5 px-2 text-[10px] sm:text-xs text-text-muted font-medium">Humidity</th>
+                        <th className="text-right py-1.5 px-2 text-[10px] sm:text-xs text-text-muted font-medium">Flow</th>
+                        <th className="text-center py-1.5 px-2 text-[10px] sm:text-xs text-text-muted font-medium">Anomaly</th>
                     </tr>
                 </thead>
                 <tbody>

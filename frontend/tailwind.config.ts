@@ -10,17 +10,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: '#1a1a2e',
-        surface: '#16213e',
-        accent: '#0f3460',
-        cyan: '#00d4ff',
-        purple: '#7f77dd',
-        teal: '#1d9e75',
-        amber: '#ef9f27',
-        coral: '#e24b4a',
-        'text-primary': '#e2e8f0',
-        'text-secondary': '#94a3b8',
-        'text-muted': '#475569',
+        primary: 'var(--color-primary)',
+        surface: 'var(--color-surface)',
+        accent: 'var(--color-accent)',
+        cyan: 'var(--color-cyan)',
+        purple: 'var(--color-purple)',
+        teal: 'var(--color-teal)',
+        amber: 'var(--color-amber)',
+        coral: 'var(--color-coral)',
+        'text-primary': 'var(--color-text-primary)',
+        'text-secondary': 'var(--color-text-secondary)',
+        'text-muted': 'var(--color-text-muted)',
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],

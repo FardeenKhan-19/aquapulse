@@ -57,7 +57,7 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
                         animate={{ x: 0 }}
                         exit={{ x: '-100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="fixed left-0 top-0 z-50 h-screen w-[280px] bg-primary border-r border-accent/50 flex flex-col lg:hidden"
+                        className="fixed left-0 top-0 z-50 h-screen w-[80vw] max-w-[280px] bg-primary border-r border-accent/50 flex flex-col lg:hidden"
                     >
                         <div className="h-1 w-full bg-gradient-to-r from-cyan via-purple to-teal" />
 
