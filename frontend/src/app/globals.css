@@ -6,33 +6,33 @@
   :root {
     --background: 210 40% 98%;
     --foreground: 222 84% 5%;
-    --color-primary: #f1f5f9;
-    --color-surface: #ffffff;
-    --color-accent: #cbd5e1;
-    --color-cyan: #0284c7;
-    --color-purple: #7c3aed;
-    --color-teal: #0d9488;
-    --color-amber: #d97706;
-    --color-coral: #dc2626;
-    --color-text-primary: #0f172a;
-    --color-text-secondary: #475569;
-    --color-text-muted: #94a3b8;
+    --color-primary: 241 245 249;
+    --color-surface: 255 255 255;
+    --color-accent: 203 213 225;
+    --color-cyan: 2 132 199;
+    --color-purple: 124 58 237;
+    --color-teal: 13 148 136;
+    --color-amber: 217 119 6;
+    --color-coral: 220 38 38;
+    --color-text-primary: 15 23 42;
+    --color-text-secondary: 71 85 105;
+    --color-text-muted: 148 163 184;
   }
 
   .dark {
     --background: 240 20% 9%;
     --foreground: 215 28% 89%;
-    --color-primary: #1a1a2e;
-    --color-surface: #16213e;
-    --color-accent: #0f3460;
-    --color-cyan: #00d4ff;
-    --color-purple: #7f77dd;
-    --color-teal: #1d9e75;
-    --color-amber: #ef9f27;
-    --color-coral: #e24b4a;
-    --color-text-primary: #e2e8f0;
-    --color-text-secondary: #94a3b8;
-    --color-text-muted: #475569;
+    --color-primary: 26 26 46;
+    --color-surface: 22 33 62;
+    --color-accent: 15 52 96;
+    --color-cyan: 0 212 255;
+    --color-purple: 127 119 221;
+    --color-teal: 29 158 117;
+    --color-amber: 239 159 39;
+    --color-coral: 226 75 74;
+    --color-text-primary: 226 232 240;
+    --color-text-secondary: 148 163 184;
+    --color-text-muted: 71 85 105;
   }
 
   body {
@@ -68,11 +68,11 @@
 }
 
 .mapboxgl-popup-tip {
-  border-top-color: var(--color-surface) !important;
+  border-top-color: rgb(var(--color-surface)) !important;
 }
 
 .mapboxgl-popup-close-button {
-  color: var(--color-text-muted) !important;
+  color: rgb(var(--color-text-muted)) !important;
   font-size: 18px !important;
   padding: 4px 8px !important;
 }
@@ -93,7 +93,7 @@
 }
 
 .animated-gradient {
-  background: linear-gradient(-45deg, var(--color-primary), var(--color-surface), var(--color-accent), var(--color-primary));
+  background: linear-gradient(-45deg, rgb(var(--color-primary)), rgb(var(--color-surface)), rgb(var(--color-accent)), rgb(var(--color-primary)));
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
 }

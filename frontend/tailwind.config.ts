@@ -10,17 +10,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: 'var(--color-primary)',
-        surface: 'var(--color-surface)',
-        accent: 'var(--color-accent)',
-        cyan: 'var(--color-cyan)',
-        purple: 'var(--color-purple)',
-        teal: 'var(--color-teal)',
-        amber: 'var(--color-amber)',
-        coral: 'var(--color-coral)',
-        'text-primary': 'var(--color-text-primary)',
-        'text-secondary': 'var(--color-text-secondary)',
-        'text-muted': 'var(--color-text-muted)',
+        primary: 'rgb(var(--color-primary) / <alpha-value>)',
+        surface: 'rgb(var(--color-surface) / <alpha-value>)',
+        accent: 'rgb(var(--color-accent) / <alpha-value>)',
+        cyan: 'rgb(var(--color-cyan) / <alpha-value>)',
+        purple: 'rgb(var(--color-purple) / <alpha-value>)',
+        teal: 'rgb(var(--color-teal) / <alpha-value>)',
+        amber: 'rgb(var(--color-amber) / <alpha-value>)',
+        coral: 'rgb(var(--color-coral) / <alpha-value>)',
+        'text-primary': 'rgb(var(--color-text-primary) / <alpha-value>)',
+        'text-secondary': 'rgb(var(--color-text-secondary) / <alpha-value>)',
+        'text-muted': 'rgb(var(--color-text-muted) / <alpha-value>)',
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
