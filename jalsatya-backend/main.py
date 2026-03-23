@@ -88,6 +88,11 @@ async def seed_database():
 
         villages = await seed_villages(db)
 
+        # Bind Health Officer to the newly created demo villages so they can see data
+        ho_user.assigned_village_ids = [str(v.id) for v in villages]
+        db.add(ho_user)
+        await db.flush()
+
         sensors = []
         demo_village_names = ["Dharangaon", "Yawal", "Raver"]
         demo_villages = [v for v in villages if v.name in demo_village_names]
