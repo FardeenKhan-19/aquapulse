@@ -29,6 +29,9 @@ class MockRedis:
             self._expires[key] = time.time() + ex
         return True
     async def setex(self, key, time_s, value):
+        from datetime import timedelta
+        if isinstance(time_s, timedelta):
+            time_s = time_s.total_seconds()
         self._data[key] = value
         self._expires[key] = time.time() + time_s
         return True
