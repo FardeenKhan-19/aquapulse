@@ -26,20 +26,21 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Force override to Render backend if env variable contains localhost (like from old Vercel settings)
-  const envUrl = process.env.NEXT_PUBLIC_API_URL || '';
-  const backendUrl = envUrl.includes('localhost') || !envUrl ? 'https://aquapulse-backend-6haa.onrender.com' : envUrl;
-  return [
-    {
-      source: '/api/:path*',
-      destination: `${backendUrl}/api/:path*`,
-    },
-    {
-      source: '/health',
-      destination: `${backendUrl}/health`,
-    },
-  ];
-},
+  async rewrites() {
+    // Force override to Render backend if env variable contains localhost (like from old Vercel settings)
+    const envUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    const backendUrl = envUrl.includes('localhost') || !envUrl ? 'https://aquapulse-backend-6haa.onrender.com' : envUrl;
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${backendUrl}/api/:path*`,
+      },
+      {
+        source: '/health',
+        destination: `${backendUrl}/health`,
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
