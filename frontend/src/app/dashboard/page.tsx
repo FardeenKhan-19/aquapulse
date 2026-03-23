@@ -285,11 +285,11 @@ function KpiCard({
                     </span>
                 )}
             </div>
-            <div className="font-mono text-2xl font-bold text-white mb-0.5 tabular-nums" style={{ color: alert ? '#e24b4a' : undefined }}>
+            <div className="font-mono text-2xl font-bold text-text-primary mb-0.5 tabular-nums" style={{ color: alert ? '#e24b4a' : undefined }}>
                 {value}
             </div>
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-0.5">{label}</div>
-            <div className="text-xs text-slate-500">{sub}</div>
+            <div className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-0.5">{label}</div>
+            <div className="text-xs text-text-muted">{sub}</div>
         </div>
     );
 }
@@ -332,8 +332,8 @@ function VillageRiskCard({ village, onViewDetails }: { village: Village; onViewD
                 {/* Header */}
                 <div className="flex items-start justify-between mb-3">
                     <div>
-                        <h3 className="text-sm font-semibold text-white">{village.name}</h3>
-                        <p className="text-xs text-slate-500">{village.district}, {village.state}</p>
+                        <h3 className="text-sm font-semibold text-text-primary">{village.name}</h3>
+                        <p className="text-xs text-text-muted">{village.district}, {village.state}</p>
                     </div>
                     <RiskBadge level={village.riskLevel} />
                 </div>
@@ -342,11 +342,11 @@ function VillageRiskCard({ village, onViewDetails }: { village: Village; onViewD
                 <div className="flex items-center gap-4 mb-3">
                     <div className="flex flex-col items-center">
                         <RiskGauge score={village.riskScore} level={village.riskLevel} />
-                        <span className="text-[10px] text-slate-500 mt-0.5">Risk Score</span>
+                        <span className="text-[10px] text-text-muted mt-0.5">Risk Score</span>
                     </div>
                     <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs text-slate-500">TDS (24h)</span>
+                            <span className="text-xs text-text-muted">TDS (24h)</span>
                             <span className={`font-mono text-xs font-bold ${village.currentTds > 1000 ? 'text-coral' : village.currentTds > 600 ? 'text-amber-400' : 'text-teal-400'}`}>
                                 {village.currentTds} ppm
                             </span>
@@ -378,7 +378,7 @@ function VillageRiskCard({ village, onViewDetails }: { village: Village; onViewD
 
                 {/* Footer */}
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 text-xs text-slate-500">
+                    <div className="flex items-center gap-3 text-xs text-text-muted">
                         <span className="flex items-center gap-1">
                             <span className={`w-1.5 h-1.5 rounded-full ${village.sensorsOnline === village.sensorsTotal ? 'bg-teal-400' : 'bg-amber-400'}`} />
                             {village.sensorsOnline}/{village.sensorsTotal} sensors
@@ -391,7 +391,7 @@ function VillageRiskCard({ village, onViewDetails }: { village: Village; onViewD
                         )}
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-600 font-mono">{village.lastUpdated}</span>
+                        <span className="text-xs text-text-secondary font-mono">{village.lastUpdated}</span>
                         <button
                             onClick={onViewDetails}
                             className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-cyan-400 hover:bg-cyan-400/10 border border-cyan-400/20 hover:border-cyan-400/40 transition-colors"
@@ -412,9 +412,9 @@ function TdsChart() {
         if (!active || !payload?.length) return null;
         const val = payload[0]?.value;
         return (
-            <div className="bg-navy-700 border border-navy-500 rounded-lg px-3 py-2 shadow-xl">
-                <p className="text-xs text-slate-400 mb-1 font-mono">{label}</p>
-                <p className="text-sm font-bold text-white font-mono">{val} ppm</p>
+            <div className="bg-surface border border-accent rounded-lg px-3 py-2 shadow-xl">
+                <p className="text-xs text-text-muted mb-1 font-mono">{label}</p>
+                <p className="text-sm font-bold text-text-primary font-mono">{val} ppm</p>
                 <p className={`text-xs font-mono ${val > 1000 ? 'text-coral' : val > 600 ? 'text-amber-400' : 'text-teal-400'}`}>
                     {val > 1000 ? '🔴 Critical' : val > 600 ? '🟡 Warning' : '🟢 Safe'}
                 </p>
@@ -448,11 +448,11 @@ function TdsChart() {
 
 function AlertsPanel({ alerts, onAcknowledge }: { alerts: Alert[]; onAcknowledge: (id: string) => void }) {
     return (
-        <div className="rounded-xl bg-navy-800 border border-navy-600 overflow-hidden">
-            <div className="px-4 py-3 border-b border-navy-600 flex items-center justify-between">
+        <div className="rounded-xl border border-accent overflow-hidden shadow-sm">
+            <div className="px-4 py-3 border-b border-accent flex items-center justify-between bg-surface/50">
                 <div className="flex items-center gap-2">
                     <Bell className="w-4 h-4 text-coral" />
-                    <h2 className="text-sm font-semibold text-white">Active Alerts</h2>
+                    <h2 className="text-sm font-semibold text-text-primary">Active Alerts</h2>
                     <span className="text-xs px-1.5 py-0.5 rounded-full bg-coral/20 text-coral font-mono font-semibold">
                         {alerts.filter(a => !a.isAcknowledged).length}
                     </span>
@@ -461,20 +461,20 @@ function AlertsPanel({ alerts, onAcknowledge }: { alerts: Alert[]; onAcknowledge
                     View all <ChevronRight className="w-3 h-3" />
                 </button>
             </div>
-            <div className="divide-y divide-navy-600">
+            <div className="divide-y divide-accent">
                 {alerts.map((alert) => {
                     const cfg = SEVERITY_CONFIG[alert.severity];
                     return (
                         <div
                             key={alert.id}
-                            className={`px-4 py-3 flex items-start gap-3 transition-colors hover:bg-navy-700/50 ${alert.isAcknowledged ? 'opacity-50' : ''}`}
+                            className={`px-4 py-3 flex items-start gap-3 transition-colors hover:bg-accent/10 ${alert.isAcknowledged ? 'opacity-50' : ''}`}
                         >
                             <div className={`mt-0.5 w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${cfg.bg}`}>
                                 <span className={cfg.color}>{cfg.icon}</span>
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-0.5">
-                                    <span className="text-xs font-semibold text-white">{alert.villageName}</span>
+                                    <span className="text-xs font-semibold text-text-primary">{alert.villageName}</span>
                                     <span className={`text-xs ${cfg.color} font-medium capitalize`}>{alert.severity}</span>
                                     {alert.isAcknowledged && (
                                         <span className="text-xs text-teal-400 flex items-center gap-0.5">
@@ -482,8 +482,8 @@ function AlertsPanel({ alerts, onAcknowledge }: { alerts: Alert[]; onAcknowledge
                                         </span>
                                     )}
                                 </div>
-                                <p className="text-xs text-slate-400 truncate">{alert.message}</p>
-                                <p className="text-xs text-slate-600 font-mono mt-0.5">{alert.time}</p>
+                                <p className="text-xs text-text-secondary truncate">{alert.message}</p>
+                                <p className="text-xs text-text-muted font-mono mt-0.5">{alert.time}</p>
                             </div>
                             {!alert.isAcknowledged && (
                                 <button
@@ -578,11 +578,11 @@ function OverviewTab({ villages, alerts, onAcknowledge, onViewVillage }: {
             {/* TDS Chart + Alerts */}
             <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
                 {/* TDS Timeline */}
-                <div className="xl:col-span-3 rounded-xl bg-navy-800 border border-navy-600 p-4">
+                <div className="xl:col-span-3 rounded-xl border border-accent p-4 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
                         <div>
-                            <h2 className="text-sm font-semibold text-white">Dharangaon TDS — Last 24 Hours</h2>
-                            <p className="text-xs text-slate-500 mt-0.5">Tapi River intake · Sensor Node JS-DH-001</p>
+                            <h2 className="text-sm font-semibold text-text-primary">Dharangaon TDS — Last 24 Hours</h2>
+                            <p className="text-xs text-text-muted mt-0.5">Tapi River intake · Sensor Node JS-DH-001</p>
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="font-mono text-lg font-bold text-coral">1,410</span>
@@ -609,12 +609,12 @@ function OverviewTab({ villages, alerts, onAcknowledge, onViewVillage }: {
             {/* Village Cards Grid */}
             <div>
                 <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                    <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-cyan-400" />
                         Village Risk Status
-                        <span className="text-xs text-slate-500 font-normal">— {villages.length} villages monitored</span>
+                        <span className="text-xs text-text-muted font-normal">— {villages.length} villages monitored</span>
                     </h2>
-                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <div className="flex items-center gap-2 text-xs text-text-muted">
                         <Users className="w-3.5 h-3.5" />
                         <span className="font-mono">{totalPopAtRisk.toLocaleString('en-IN')} population at risk</span>
                     </div>
@@ -627,14 +627,14 @@ function OverviewTab({ villages, alerts, onAcknowledge, onViewVillage }: {
             </div>
 
             {/* AI Assistant Quick Access */}
-            <div className="rounded-xl bg-navy-800 border border-purple-500/20 p-4"
+            <div className="rounded-xl border border-purple-500/20 p-4 shadow-sm"
                 style={{ boxShadow: '0 0 20px rgba(127,119,221,0.08)' }}>
                 <div className="flex items-center gap-2 mb-3">
                     <MessageSquare className="w-4 h-4 text-purple-400" />
-                    <h2 className="text-sm font-semibold text-white">Ask AquaPulse AI</h2>
+                    <h2 className="text-sm font-semibold text-text-primary">Ask AquaPulse AI</h2>
                     <span className="text-xs px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-400">Gemini</span>
                 </div>
-                <p className="text-xs text-slate-500 mb-3">
+                <p className="text-xs text-text-secondary mb-3">
                     Ask about water quality trends, contamination sources, disease risk factors, or legal filing status across your assigned villages.
                 </p>
                 <div className="flex gap-2">
@@ -643,7 +643,7 @@ function OverviewTab({ villages, alerts, onAcknowledge, onViewVillage }: {
                         value={chatInput}
                         onChange={(e) => setChatInput(e.target.value)}
                         placeholder="e.g. Why is Dharangaon TDS spiking? What is the contamination source?"
-                        className="flex-1 bg-navy-900 border border-navy-600 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-600 outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30 transition-all"
+                        className="flex-1 bg-surface border border-accent rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30 transition-all"
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' && chatInput.trim()) {
                                 router.push('/dashboard/chatbot?q=' + encodeURIComponent(chatInput.trim()));
@@ -672,7 +672,7 @@ function OverviewTab({ villages, alerts, onAcknowledge, onViewVillage }: {
                         <button
                             key={q}
                             onClick={() => setChatInput(q)}
-                            className="text-xs px-2.5 py-1 rounded-full bg-navy-700 border border-navy-500 text-slate-400 hover:text-purple-400 hover:border-purple-500/30 transition-colors"
+                            className="text-xs px-2.5 py-1 rounded-full bg-surface border border-accent text-text-secondary hover:text-purple-400 hover:border-purple-500/30 transition-colors"
                         >
                             {q}
                         </button>
@@ -708,19 +708,19 @@ function VillagesTab({ villages, onViewVillage }: { villages: Village[]; onViewV
             {/* Filters */}
             <div className="flex flex-wrap items-center gap-3">
                 <div className="relative flex-1 min-w-[200px]">
-                    <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                    <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
                     <input
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search villages or districts..."
-                        className="w-full bg-navy-800 border border-navy-600 rounded-lg pl-9 pr-3 py-2 text-sm text-slate-200 placeholder-slate-600 outline-none focus:border-cyan-400/40 transition-all"
+                        className="w-full bg-surface border border-accent rounded-lg pl-9 pr-3 py-2 text-sm text-text-primary placeholder-text-muted outline-none focus:border-cyan-400/40 transition-all"
                     />
                 </div>
                 <select
                     value={filterLevel}
                     onChange={(e) => setFilterLevel(e.target.value as any)}
-                    className="bg-navy-800 border border-navy-600 rounded-lg px-3 py-2 text-sm text-slate-300 outline-none focus:border-cyan-400/40"
+                    className="bg-surface border border-accent rounded-lg px-3 py-2 text-sm text-text-secondary outline-none focus:border-cyan-400/40"
                 >
                     <option value="all">All Risk Levels</option>
                     <option value="critical">Critical</option>
@@ -732,7 +732,7 @@ function VillagesTab({ villages, onViewVillage }: { villages: Village[]; onViewV
                 <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as any)}
-                    className="bg-navy-800 border border-navy-600 rounded-lg px-3 py-2 text-sm text-slate-300 outline-none focus:border-cyan-400/40"
+                    className="bg-surface border border-accent rounded-lg px-3 py-2 text-sm text-text-secondary outline-none focus:border-cyan-400/40"
                 >
                     <option value="riskScore">Sort: Risk Score</option>
                     <option value="name">Sort: Name</option>
@@ -740,34 +740,33 @@ function VillagesTab({ villages, onViewVillage }: { villages: Village[]; onViewV
                 </select>
             </div>
 
-            {/* Table */}
-            <div className="rounded-xl bg-navy-800 border border-navy-600 overflow-hidden">
+            <div className="rounded-xl bg-surface border border-accent overflow-hidden shadow-sm">
                 <div className="overflow-x-auto scrollbar-thin">
                     <table className="w-full min-w-[700px]">
                         <thead>
-                            <tr className="border-b border-navy-600 bg-navy-900/50">
-                                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Village</th>
-                                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Population</th>
-                                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Risk Score</th>
-                                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Risk Level</th>
-                                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Current TDS</th>
-                                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Alerts</th>
-                                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Sensors</th>
-                                <th className="text-right px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Action</th>
+                            <tr className="border-b border-accent bg-surface/50">
+                                <th className="text-left px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wide">Village</th>
+                                <th className="text-left px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wide">Population</th>
+                                <th className="text-left px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wide">Risk Score</th>
+                                <th className="text-left px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wide">Risk Level</th>
+                                <th className="text-left px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wide">Current TDS</th>
+                                <th className="text-left px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wide">Alerts</th>
+                                <th className="text-left px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wide">Sensors</th>
+                                <th className="text-right px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wide">Action</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-navy-700">
+                        <tbody className="divide-y divide-accent">
                             {filtered.map((v) => {
                                 const cfg = RISK_CONFIG[v.riskLevel];
                                 return (
-                                    <tr key={v.id} className="hover:bg-navy-700/40 transition-colors group cursor-pointer" onClick={() => onViewVillage(v.id)}>
+                                    <tr key={v.id} className="hover:bg-accent/10 transition-colors group cursor-pointer" onClick={() => onViewVillage(v.id)}>
                                         <td className="px-4 py-3">
                                             <div>
-                                                <p className="text-sm font-medium text-white">{v.name}</p>
-                                                <p className="text-xs text-slate-500">{v.district}</p>
+                                                <p className="text-sm font-medium text-text-primary">{v.name}</p>
+                                                <p className="text-xs text-text-muted">{v.district}</p>
                                             </div>
                                         </td>
-                                        <td className="px-4 py-3 font-mono text-sm text-slate-300">{v.population.toLocaleString('en-IN')}</td>
+                                        <td className="px-4 py-3 font-mono text-sm text-text-secondary">{v.population.toLocaleString('en-IN')}</td>
                                         <td className="px-4 py-3">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-16 h-1.5 rounded-full bg-navy-600 overflow-hidden">
