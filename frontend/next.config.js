@@ -26,20 +26,20 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  async rewrites() {
-    // Defaults to the Render backend so it works automatically without ENV setup!
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://aquapulse-backend-6haa.onrender.com';
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${backendUrl}/api/:path*`,
-      },
-      {
-        source: '/health',
-        destination: `${backendUrl}/health`,
-      },
-    ];
-  },
+  // Force override to Render backend if env variable contains localhost (like from old Vercel settings)
+  const envUrl = process.env.NEXT_PUBLIC_API_URL || '';
+  const backendUrl = envUrl.includes('localhost') || !envUrl ? 'https://aquapulse-backend-6haa.onrender.com' : envUrl;
+  return [
+    {
+      source: '/api/:path*',
+      destination: `${backendUrl}/api/:path*`,
+    },
+    {
+      source: '/health',
+      destination: `${backendUrl}/health`,
+    },
+  ];
+},
 };
 
 module.exports = nextConfig;
