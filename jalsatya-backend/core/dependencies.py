@@ -12,16 +12,25 @@ from config import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
 
+import time
+
 class MockRedis:
     def __init__(self):
         self._data = {}
+        self._expires = {}
     async def get(self, key):
+        if key in self._expires and time.time() > self._expires[key]:
+            self._data.pop(key, None)
+            self._expires.pop(key, None)
         return self._data.get(key)
     async def set(self, key, value, ex=None):
         self._data[key] = value
+        if ex:
+            self._expires[key] = time.time() + ex
         return True
-    async def setex(self, key, time, value):
+    async def setex(self, key, time_s, value):
         self._data[key] = value
+        self._expires[key] = time.time() + time_s
         return True
     async def delete(self, *names):
         for name in names:
