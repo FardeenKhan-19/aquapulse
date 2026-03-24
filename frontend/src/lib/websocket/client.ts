@@ -1,7 +1,7 @@
 import { useWsStore } from '@/lib/stores/wsStore';
 import type { WsMessage } from '@/lib/types/websocket';
 
-const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_URL || 'wss://aquapulse-backend-6haa.onrender.com';
+const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
 const MAX_RECONNECT_DELAY = 30000;
 const INITIAL_RECONNECT_DELAY = 1000;
 
@@ -24,12 +24,7 @@ class WebSocketClient {
             return;
         }
 
-        let WS_BASE_URL = process.env.NEXT_PUBLIC_WS_URL || 'wss://aquapulse-backend-6haa.onrender.com';
-
-        // Failsafe: If Vercel env variables mistakenly baked localhost into production, force the live backend.
-        if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && WS_BASE_URL.includes('localhost')) {
-            WS_BASE_URL = 'wss://aquapulse-backend-6haa.onrender.com';
-        }
+        let WS_BASE_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
 
         WS_BASE_URL = WS_BASE_URL.replace(/\/+$/, '');
 
@@ -70,7 +65,7 @@ class WebSocketClient {
     private scheduleReconnect() {
         if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
         this.reconnectTimer = setTimeout(() => {
-            this.doConnect();
+            if (this.token) this.connect(this.token);
         }, this.reconnectDelay);
         this.reconnectDelay = Math.min(this.reconnectDelay * 2, MAX_RECONNECT_DELAY);
     }

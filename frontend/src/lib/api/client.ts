@@ -1,7 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import type { ApiResponse, ApiError } from '@/lib/types/api';
 
-const API_BASE_URL = 'https://aquapulse-backend-6haa.onrender.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 // In the browser, use relative paths so requests go through Next.js rewrites (avoids CORS).
 // On the server (SSR), use the full URL to reach the backend directly.

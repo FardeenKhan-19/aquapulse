@@ -10,7 +10,8 @@ interface SensorNodeCardProps {
 }
 
 export function SensorNodeCard({ sensor }: SensorNodeCardProps) {
-    const isOnline = sensor.is_active && sensor.last_seen && (Date.now() - new Date(sensor.last_seen).getTime()) < 300000;
+    const normalizedLastSeen = sensor.last_seen ? (sensor.last_seen.endsWith('Z') ? sensor.last_seen : `${sensor.last_seen}Z`) : null;
+    const isOnline = sensor.is_active && normalizedLastSeen && (Date.now() - new Date(normalizedLastSeen).getTime()) < 300000;
 
     return (
         <div className="bg-surface border border-accent/30 rounded-xl p-4 hover:border-cyan/20 transition-colors">
@@ -32,7 +33,7 @@ export function SensorNodeCard({ sensor }: SensorNodeCardProps) {
                 </div>
                 <div className="flex justify-between">
                     <span className="text-text-muted">Last Seen</span>
-                    <span className="text-text-secondary">{sensor.last_seen ? formatRelativeTime(sensor.last_seen) : 'Never'}</span>
+                    <span className="text-text-secondary">{normalizedLastSeen ? formatRelativeTime(normalizedLastSeen) : 'Never'}</span>
                 </div>
                 {sensor.battery_level !== undefined && (
                     <div className="flex justify-between">

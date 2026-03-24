@@ -1,28 +1,26 @@
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
-from passlib.context import CryptContext
+import bcrypt
 from jose import jwt, JWTError
 from config import settings
 import uuid
 import hashlib
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
-
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(rounds=12)).decode('utf-8')
 
 
 def hash_api_key(api_key: str) -> str:
-    return pwd_context.hash(api_key)
+    return hashlib.sha256(api_key.encode('utf-8')).hexdigest()
 
 
 def verify_api_key(plain_key: str, hashed_key: str) -> bool:
-    return pwd_context.verify(plain_key, hashed_key)
+    return hashlib.sha256(plain_key.encode('utf-8')).hexdigest() == hashed_key
 
 
 def generate_api_key() -> str:

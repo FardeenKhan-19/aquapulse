@@ -27,8 +27,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   async rewrites() {
-    // Strictly override to the live backend to avoid Vercel infinite proxy loops 
-    const backendUrl = 'https://aquapulse-backend-6haa.onrender.com';
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
     return [
       {
         source: '/api/:path*',

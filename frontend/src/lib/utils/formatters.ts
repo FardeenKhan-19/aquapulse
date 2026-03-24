@@ -1,8 +1,13 @@
 import { formatDistanceToNow, format, parseISO } from 'date-fns';
 
+function normalizeIsoString(isoString: string): string {
+    if (!isoString) return isoString;
+    return isoString.endsWith('Z') || isoString.includes('+') ? isoString : `${isoString}Z`;
+}
+
 export function formatRelativeTime(isoString: string): string {
     try {
-        return formatDistanceToNow(parseISO(isoString), { addSuffix: true });
+        return formatDistanceToNow(parseISO(normalizeIsoString(isoString)), { addSuffix: true });
     } catch {
         return 'Unknown';
     }
@@ -10,7 +15,7 @@ export function formatRelativeTime(isoString: string): string {
 
 export function formatDateTime(isoString: string): string {
     try {
-        return format(parseISO(isoString), 'MMM d, yyyy HH:mm');
+        return format(parseISO(normalizeIsoString(isoString)), 'MMM d, yyyy HH:mm');
     } catch {
         return 'Unknown';
     }
@@ -18,7 +23,7 @@ export function formatDateTime(isoString: string): string {
 
 export function formatDate(isoString: string): string {
     try {
-        return format(parseISO(isoString), 'MMM d, yyyy');
+        return format(parseISO(normalizeIsoString(isoString)), 'MMM d, yyyy');
     } catch {
         return 'Unknown';
     }
@@ -26,7 +31,7 @@ export function formatDate(isoString: string): string {
 
 export function formatTime(isoString: string): string {
     try {
-        return format(parseISO(isoString), 'HH:mm');
+        return format(parseISO(normalizeIsoString(isoString)), 'HH:mm');
     } catch {
         return '--:--';
     }

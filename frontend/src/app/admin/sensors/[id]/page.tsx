@@ -17,7 +17,8 @@ export default function SensorDetailPage() {
         return <div className="space-y-4">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-24 bg-surface animate-pulse rounded-xl" />)}</div>;
     }
 
-    const isOnline = sensor.is_active && sensor.last_seen && (Date.now() - new Date(sensor.last_seen).getTime()) < 300000;
+    const normalizedLastSeen = sensor.last_seen ? (sensor.last_seen.endsWith('Z') ? sensor.last_seen : `${sensor.last_seen}Z`) : null;
+    const isOnline = sensor.is_active && normalizedLastSeen && (Date.now() - new Date(normalizedLastSeen).getTime()) < 300000;
 
     return (
         <div className="space-y-6">
@@ -32,7 +33,7 @@ export default function SensorDetailPage() {
                         <div className="flex justify-between"><span className="text-text-muted">Location</span><span className="text-text-primary font-mono">{sensor.gps_lat.toFixed(4)}, {sensor.gps_lng.toFixed(4)}</span></div>
                         <div className="flex justify-between"><span className="text-text-muted">Types</span><span className="text-text-primary">{sensor.sensor_types.join(', ')}</span></div>
                         <div className="flex justify-between"><span className="text-text-muted">Approved</span><span className={sensor.is_approved ? 'text-teal' : 'text-amber'}>{sensor.is_approved ? 'Yes' : 'Pending'}</span></div>
-                        <div className="flex justify-between"><span className="text-text-muted">Last Seen</span><span className="text-text-secondary">{sensor.last_seen ? formatRelativeTime(sensor.last_seen) : 'Never'}</span></div>
+                        <div className="flex justify-between"><span className="text-text-muted">Last Seen</span><span className="text-text-secondary">{normalizedLastSeen ? formatRelativeTime(normalizedLastSeen) : 'Never'}</span></div>
                         {sensor.deployment_date && <div className="flex justify-between"><span className="text-text-muted">Deployed</span><span className="text-text-secondary">{formatDateTime(sensor.deployment_date)}</span></div>}
                     </div>
                 </div>
