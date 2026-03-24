@@ -31,6 +31,8 @@ class WebSocketClient {
             WS_BASE_URL = 'wss://aquapulse-backend-6haa.onrender.com';
         }
 
+        WS_BASE_URL = WS_BASE_URL.replace(/\/+$/, '');
+
         try {
             this.ws = new WebSocket(`${WS_BASE_URL}/ws/live?token=${this.token}`);
 
